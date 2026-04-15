@@ -5,6 +5,7 @@ import com.desafiodunnas.sgcc.domain.Unit;
 import com.desafiodunnas.sgcc.repository.BlockRepository;
 import com.desafiodunnas.sgcc.repository.UnitRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,11 +25,22 @@ public class BlockService {
     /**
      * Cria um novo bloco e gera automaticamente todas as unidades habitacionais
      * contidas nele com base na matriz de andares e apartamentos.
-     * Utiliza inserção em lote para alto desempenho no banco.
+     * Utiliza inserção em lote para alto desempenho no banco, além de processamento assíncrono para não bloquear a thread principal.
+     * Também limita a quantidade de andares e apartamentos para evitar sobrecarga de memória e garantir a viabilidade do processo.
      */
+    @Async
     @Transactional
-    public Block createBlock(Block block) {
+    public void createBlock(Block block) {
         try {
+            if (block.getTotalFloors() < 1 || block.getTotalFloors() > 1000) {
+                throw new IllegalArgumentException("O número de andares deve ser entre 1 e 1000.");
+            }
+            if (block.getApartmentsPerFloor() < 1 || block.getApartmentsPerFloor() > 10000) {
+                throw new IllegalArgumentException("O número de apartamentos por andar deve ser entre 1 e 10000.");
+            }
+
+            System.out.println("Iniciando geração automática de unidades em segundo plano...");
+
             Block savedBlock = blockRepository.save(block);
             List<Unit> unitsToSave = new ArrayList<>();
 
@@ -44,11 +56,15 @@ public class BlockService {
 
                     unitsToSave.add(unit);
                 }
+
+                System.out.println("Geradas " + (floor * savedBlock.getApartmentsPerFloor()) + " unidades até o momento.");
+                System.out.println("Restante: " + ((savedBlock.getTotalFloors() - floor) * savedBlock.getApartmentsPerFloor()) + " unidades.");
             }
 
             unitRepository.saveAll(unitsToSave);
             savedBlock.setUnits(unitsToSave);
-            return savedBlock;
+
+            System.out.println("Geração de unidades concluída");
 
         } catch (Exception e) {
             System.err.println("Erro ao criar o bloco e gerar as unidades em lote");

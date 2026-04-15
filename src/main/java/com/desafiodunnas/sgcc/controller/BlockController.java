@@ -52,17 +52,23 @@ public class BlockController {
 
     /**
      * Cria um novo bloco e dispara a geração em massa (batch insert)
-     * de todas as unidades contidas nele via lógica de serviço.
+     * de todas as unidades contidas nele via lógica de serviço assíncrona.
      */
     @PostMapping
-    public String createBlock(@ModelAttribute Block block, Model model) {
+    public String createBlock(@ModelAttribute Block block, Model model, RedirectAttributes redirectAttributes) {
         try {
             blockService.createBlock(block);
+
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "A criação do bloco e das unidades foi iniciada em segundo plano. " +
+                            "Dependendo do tamanho, as unidades estarão disponíveis no sistema em alguns instantes.");
+
             return "redirect:/blocos";
         } catch (Exception e) {
             System.err.println("Erro ao salvar um novo bloco no banco de dados");
             e.printStackTrace(System.err);
-            model.addAttribute("errorMessage", "Ocorreu um erro ao salvar o bloco.");
+            model.addAttribute("errorMessage",
+                    "Ocorreu um erro ao salvar o bloco: " + e.getMessage());
             return "admin/blocks/form";
         }
     }
