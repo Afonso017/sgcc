@@ -130,11 +130,13 @@
                             <div class="d-flex gap-2">
                                 <a href="${pageContext.request.contextPath}/admin/usuarios/${user.id}/editar"
                                    class="btn btn-sm btn-warning">Editar</a>
-                                <form action="${pageContext.request.contextPath}/admin/usuarios/${user.id}/excluir"
-                                      method="post"
-                                      onsubmit="return confirm('Tem certeza que deseja excluir este usuário?');">
-                                    <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
-                                </form>
+                                <c:if test="${user.id != currentUser.id}">
+                                    <form action="${pageContext.request.contextPath}/admin/usuarios/${user.id}/excluir"
+                                          method="post"
+                                          onsubmit="return confirm('Tem certeza que deseja excluir este usuário?');">
+                                        <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
+                                    </form>
+                                </c:if>
                             </div>
                         </td>
                     </tr>

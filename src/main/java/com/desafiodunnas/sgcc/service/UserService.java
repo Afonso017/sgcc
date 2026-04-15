@@ -84,9 +84,13 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(Long id) {
+    public void deleteUser(Long userId, User loggedInUser) {
         try {
-            userRepository.deleteById(id);
+            if (userId.equals(loggedInUser.getId())) {
+                throw new IllegalStateException("Ação negada: Você não pode excluir sua própria conta.");
+            }
+
+            userRepository.deleteById(userId);
         } catch (Exception e) {
             System.err.println("Erro ao excluir o usuário");
             e.printStackTrace(System.err);

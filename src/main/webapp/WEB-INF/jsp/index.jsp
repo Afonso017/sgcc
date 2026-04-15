@@ -10,7 +10,7 @@
 <body>
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Sistema de Gerenciamento de Condomínio</h1>
+        <h1>Sistema de Gerenciamento de Chamados para Condomínio</h1>
         <div class="d-flex align-items-center gap-3">
             <span class="text-muted">Olá, <strong><c:out value="${currentUser.name}"/></strong> <c:if test="${currentUser.role == 'ADMIN'}">(<c:out value="${currentUser.role}"/>)</c:if></span>
             <form action="${pageContext.request.contextPath}/logout" method="post" class="m-0">

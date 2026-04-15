@@ -10,8 +10,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Controller responsável pelo gerenciamento de usuários do sistema (CRUD)
@@ -27,7 +27,6 @@ public class UserController {
 
     /**
      * Lista todos os usuários, aplicando o filtro de pesquisa se fornecido.
-     * Oculta o próprio usuário logado da listagem para evitar excluir a si próprio.
      */
     @GetMapping
     public String listUsers(@RequestParam(value = "q", required = false) String keyword,
@@ -35,9 +34,7 @@ public class UserController {
                             Model model
     ) {
         try {
-            List<User> users = userService.searchUsers(keyword).stream()
-                    .filter(user -> !user.getId().equals(currentUser.getId()))
-                    .collect(Collectors.toList());
+            List<User> users = new ArrayList<>(userService.searchUsers(keyword));
 
             model.addAttribute("users", users);
             model.addAttribute("blocks", blockService.findAllBlocks());
@@ -114,9 +111,12 @@ public class UserController {
     }
 
     @PostMapping("/{id}/excluir")
-    public String deleteUser(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String deleteUser(@PathVariable Long id,
+                             @ModelAttribute User user,
+                             RedirectAttributes redirectAttributes
+    ) {
         try {
-            userService.deleteUser(id);
+            userService.deleteUser(id, user);
             return "redirect:/admin/usuarios";
         } catch (Exception e) {
             System.err.println("Erro ao processar exclusão de usuário");
