@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * Entidade que armazena a referência física (URL ou caminho do disco)
- * de fotos ou documentos anexados durante a abertura de um chamado.
+ * de fotos ou documentos anexados durante a abertura, ou comentário de um chamado.
  */
 @Data
 @Builder
@@ -23,8 +23,12 @@ public class Attachment {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "issue_id", nullable = false)
+    @JoinColumn(name = "issue_id")
     private Issue issue;
+
+    @ManyToOne
+    @JoinColumn(name = "comment_id")
+    private Comment comment;
 
     /**
      * Caminho relativo mapeado pelo WebConfig para localizar o arquivo na pasta de uploads do servidor.

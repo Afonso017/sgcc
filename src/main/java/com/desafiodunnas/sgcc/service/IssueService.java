@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Serviço central para a gestão de chamados.
@@ -119,7 +120,7 @@ public class IssueService {
      * interajam com chamados do seu escopo de autorização.
      */
     @Transactional
-    public void addComment(Long issueId, User author, String content) {
+    public void addComment(Long issueId, User author, String content, List<MultipartFile> files) {
         try {
             Issue issue = issueRepository.findById(issueId)
                     .orElseThrow(() -> new IllegalArgumentException("Issue não encontrada"));
@@ -143,6 +144,20 @@ public class IssueService {
                     .author(author)
                     .issue(issue)
                     .build();
+
+            // Se houver arquivos, salva no disco e cria as entidades Attachment
+            if (files != null && !files.isEmpty()) {
+                List<String> fileUrls = fileStorageService.storeFiles(files);
+
+                List<Attachment> attachments = fileUrls.stream()
+                        .map(url -> Attachment.builder()
+                                .fileUrl(url)
+                                .comment(comment) // Já faz o vínculo bidirecional
+                                .build())
+                        .collect(Collectors.toList());
+
+                comment.setAttachments(attachments);
+            }
 
             commentRepository.save(comment);
         } catch (Exception e) {

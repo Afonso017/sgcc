@@ -122,11 +122,12 @@ public class IssueController {
     @PostMapping("/{issueId}/comentarios")
     public String addComment(@PathVariable Long issueId,
                              @RequestParam String content,
+                             @RequestParam(value = "files", required = false) List<MultipartFile> files,
                              @ModelAttribute("currentUser") User currentUser,
                              RedirectAttributes redirectAttributes
     ) {
         try {
-            issueService.addComment(issueId, currentUser, content);
+            issueService.addComment(issueId, currentUser, content, files);
             return "redirect:/issues";
         } catch (Exception e) {
             System.err.println("Erro ao adicionar comentário");

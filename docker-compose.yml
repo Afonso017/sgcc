@@ -27,6 +27,8 @@ services:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: prod
+    volumes:
+      - ./uploads:/app/uploads
 
 volumes:
   pgdata:

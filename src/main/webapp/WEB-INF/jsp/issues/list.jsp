@@ -128,6 +128,19 @@
                                                 <span class="text-muted" style="font-size: 0.8em;"><c:out value="${comment.formattedCreatedAt}"/></span>:
                                                 <br>
                                                 <c:out value="${comment.content}" />
+
+                                                <c:if test="${not empty comment.attachments}">
+                                                    <div class="d-flex flex-wrap gap-2 mt-1">
+                                                        <c:forEach var="att" items="${comment.attachments}" varStatus="st">
+                                                            <a href="${pageContext.request.contextPath}${att.fileUrl}"
+                                                               target="_blank"
+                                                               class="btn btn-sm btn-link p-0 text-decoration-none"
+                                                               style="font-size: 0.85em; color: #6c757d;">
+                                                                <i class="bi bi-paperclip"></i> Arquivo ${st.index + 1}
+                                                            </a>
+                                                        </c:forEach>
+                                                    </div>
+                                                </c:if>
                                             </li>
                                         </c:forEach>
                                     </ul>
@@ -140,9 +153,18 @@
                                         </div>
                                     </c:when>
                                     <c:otherwise>
-                                        <form action="${pageContext.request.contextPath}/issues/${issue.id}/comentarios" method="post" class="d-flex">
-                                            <input type="text" name="content" class="form-control form-control-sm me-2" placeholder="Escreva seu comentário..." required>
-                                            <button type="submit" class="btn btn-sm btn-primary">Enviar</button>
+                                        <form action="${pageContext.request.contextPath}/issues/${issue.id}/comentarios"
+                                              method="post"
+                                              enctype="multipart/form-data"
+                                              class="d-flex flex-column">
+                                            <div class="d-flex mb-2">
+                                                <input type="text" name="content" class="form-control form-control-sm me-2" placeholder="Escreva seu comentário..." required>
+                                                <button type="submit" class="btn btn-sm btn-primary">Enviar</button>
+                                            </div>
+                                            <div class="input-group input-group-sm">
+                                                <label class="input-group-text" for="commentFiles"><i class="bi bi-paperclip"></i></label>
+                                                <input type="file" name="files" class="form-control" id="commentFiles" multiple>
+                                            </div>
                                         </form>
                                     </c:otherwise>
                                 </c:choose>

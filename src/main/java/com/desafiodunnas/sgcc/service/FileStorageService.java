@@ -8,7 +8,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Serviço de infraestrutura dedicado ao upload/download de arquivos.
@@ -30,6 +32,7 @@ public class FileStorageService {
     /**
      * Recebe um arquivo binário e o salva no disco físico ou volume Docker.
      * Utiliza UUID para evitar colisão de nomes e ataques de substituição de arquivos.
+     *
      * @param file O arquivo enviado pelo formulário.
      * @return O caminho relativo gerado para o arquivo salvo.
      */
@@ -57,5 +60,22 @@ public class FileStorageService {
             e.printStackTrace(System.err);
             throw new RuntimeException("Falha ao armazenar o arquivo", e);
         }
+    }
+
+    /**
+     * Processa uma lista de arquivos de upload.
+     *
+     * @param files Lista de MultipartFile vindos do formulário.
+     * @return Lista contendo as URLs dos arquivos salvos.
+     */
+    public List<String> storeFiles(List<MultipartFile> files) {
+        if (files == null || files.isEmpty()) {
+            return List.of();
+        }
+
+        return files.stream()
+                .filter(file -> !file.isEmpty())
+                .map(this::store)
+                .collect(Collectors.toList());
     }
 }
