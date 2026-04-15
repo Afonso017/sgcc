@@ -5,6 +5,7 @@ import com.desafiodunnas.sgcc.domain.UserRole;
 import com.desafiodunnas.sgcc.service.BlockService;
 import com.desafiodunnas.sgcc.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -96,10 +97,11 @@ public class UserController {
     @PostMapping("/{id}/editar")
     public String updateUser(@PathVariable Long id,
                              @ModelAttribute User user,
+                             @ModelAttribute("currentUser") User currentUser,
                              RedirectAttributes redirectAttributes
     ) {
         try {
-            userService.updateUser(id, user);
+            userService.updateUser(id, user, currentUser);
             return "redirect:/admin/usuarios";
         } catch (Exception e) {
             System.err.println("Erro ao atualizar o usuário");

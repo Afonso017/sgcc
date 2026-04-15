@@ -34,11 +34,22 @@
         </div>
         <div class="mb-3">
             <label class="form-label">Cargo:</label>
-            <select name="role" class="form-select" required>
-                <c:forEach var="role" items="${roles}">
-                    <option value="${role}" ${user.role == role ? 'selected' : ''}><c:out value="${role}"/></option>
-                </c:forEach>
-            </select>
+            <c:choose>
+                <c:when test="${user.id == currentUser.id}">
+                    <input type="text" class="form-control bg-light" value="${user.role}" disabled>
+                    <input type="hidden" name="role" value="${user.role}">
+                    <div class="form-text text-muted">
+                        <i class="bi bi-info-circle"></i> Você não pode alterar seu próprio nível de acesso por questões de segurança.
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <select name="role" class="form-select" required>
+                        <c:forEach var="role" items="${roles}">
+                            <option value="${role}" ${user.role == role ? 'selected' : ''}><c:out value="${role}"/></option>
+                        </c:forEach>
+                    </select>
+                </c:otherwise>
+            </c:choose>
         </div>
         <button type="submit" class="btn btn-primary">${user.id == null ? 'Salvar' : 'Atualizar'}</button>
         <a href="${pageContext.request.contextPath}/admin/usuarios" class="btn btn-secondary">Cancelar</a>

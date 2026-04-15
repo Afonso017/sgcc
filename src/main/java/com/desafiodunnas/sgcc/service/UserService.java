@@ -61,10 +61,14 @@ public class UserService {
      * no formulário de edição.
      */
     @Transactional
-    public void updateUser(Long id, User updatedUser) {
+    public void updateUser(Long id, User updatedUser, User currentUser) {
         try {
             User existing = userRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+
+            if (existing.getId().equals(currentUser.getId()) && !existing.getRole().equals(updatedUser.getRole())) {
+                throw new IllegalStateException("Ação negada: Você não pode alterar seu próprio nível de acesso.");
+            }
 
             existing.setName(updatedUser.getName());
             existing.setEmail(updatedUser.getEmail());
