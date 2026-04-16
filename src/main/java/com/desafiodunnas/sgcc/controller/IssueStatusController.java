@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Controller administrativo para a criação e manutenção do fluxo de estados dos chamados.
@@ -70,6 +71,27 @@ public class IssueStatusController {
     @PostMapping("/{id}/excluir")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
+            Optional<IssueStatus> statusOpt = issueStatusRepository.findById(id);
+            if (statusOpt.isPresent()) {
+                IssueStatus status = statusOpt.get();
+
+                if (Boolean.TRUE.equals(status.getIsDefault())) {
+                    redirectAttributes.addFlashAttribute("errorMessage",
+                            "Não é possível excluir o status padrão do sistema. " +
+                                    "Defina outro status como padrão antes de excluí-lo.");
+                    return "redirect:/admin/status-chamados";
+                }
+
+                if (Boolean.TRUE.equals(status.getIsFinal())) {
+                    if (issueStatusRepository.countByIsFinalTrue() <= 1) {
+                        redirectAttributes.addFlashAttribute("errorMessage",
+                                "Não é possível excluir o único status de conclusão. " +
+                                        "O sistema exige pelo menos uma forma de encerrar os chamados.");
+                        return "redirect:/admin/status-chamados";
+                    }
+                }
+            }
+
             issueStatusRepository.deleteById(id);
             return "redirect:/admin/status-chamados";
         } catch (Exception e) {

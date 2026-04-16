@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface IssueStatusRepository extends JpaRepository<IssueStatus, Long> {
     Optional<IssueStatus> findByIsDefaultTrue();
     boolean existsByNameIgnoreCase(String name);
+    long countByIsFinalTrue();
 }
