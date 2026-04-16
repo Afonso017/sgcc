@@ -105,18 +105,14 @@ git clone https://github.com/Afonso017/sgcc.git
 
 ### 5.3. Preparação do Ambiente
 Antes de iniciar os serviços, é necessário configurar as variáveis de ambiente locais que não são rastreadas pelo controle de versão:
-* **Arquivo de Configuração**: Certifique-se de criar o arquivo `application-dev.properties` no diretório [`/src/main/resources`](./src/main/resources) para conter as definições específicas de banco de dados de sua preferência necessárias para o funcionamento do sistema.
-* O [`docker-compose.yml`](./docker-compose.yml) está configurado para rodar o perfil `dev` por meio da variável `SPRING_PROFILES_ACTIVE`, portanto, as configurações de banco de dados devem ser compatíveis com as credenciais e parâmetros definidos no arquivo de composição do Docker.
+* **Variáveis de Ambiente**: Certifique-se de criar o arquivo `.env` na raíz do projeto para conter as variáveis de ambiente de conexão do banco de dados de sua preferência, necessárias para o funcionamento do sistema. Essas variáveis serão automaticamente injetadas no ambiente do contêiner Docker durante a execução do Compose.
 
 Utilize o seguinte modelo como referência:
 
 ```properties
-# Configurações de Banco de Dados
-spring.datasource.url=jdbc:postgresql://db:5432/{nome_do_banco}
-spring.datasource.username={usuario_do_banco}
-spring.datasource.password={senha_do_banco}
-spring.datasource.driver-class-name=org.postgresql.Driver
-spring.jpa.hibernate.ddl-auto=validate
+DATABASE=
+USERNAME=
+PASSWORD=
 ```
 
 ### 5.4. Execução Via Compose
