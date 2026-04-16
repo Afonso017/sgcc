@@ -31,8 +31,11 @@
             <a href="${pageContext.request.contextPath}/" class="btn btn-secondary ms-2">Voltar</a>
         </div>
 
-        <form action="${pageContext.request.contextPath}/issues" method="get" class="d-flex" style="width: 400px;">
-            <input type="text" name="q" class="form-control me-2" placeholder="Pesquisar..." value="${keyword}">
+        <form action="${pageContext.request.contextPath}/issues" method="get" class="d-flex" style="width: 500px;">
+            <input type="text" name="q" class="form-control me-2"
+                   placeholder="Descrição, unidade, status..."
+                   value="${keyword}"
+                   title="Pesquise por qualquer informação do chamado">
             <button type="submit" class="btn btn-primary">Pesquisar</button>
             <c:if test="${not empty keyword}">
                 <a href="${pageContext.request.contextPath}/issues" class="btn btn-outline-secondary ms-2">Limpar</a>

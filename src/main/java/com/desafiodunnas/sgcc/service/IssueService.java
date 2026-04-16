@@ -167,14 +167,17 @@ public class IssueService {
         }
     }
 
+    /**
+     * Filtra todos os chamados de dentro do escopo de um usuário por meio de uma palavra de pesquisa.
+     */
     public List<Issue> findAllIssuesForUser(User user, String keyword) {
         try {
             String search = (keyword == null) ? "" : keyword.trim();
 
             if (user.getRole() == UserRole.MORADOR) {
-                return issueRepository.searchByDescriptionForResident(user, user.getUnits(), search);
+                return issueRepository.searchComprehensiveForResident(user.getUnits(), search);
             }
-            return issueRepository.searchByDescriptionGlobal(search);
+            return issueRepository.searchComprehensiveGlobal(search);
         } catch (Exception e) {
             System.err.println("Erro ao buscar chamados filtrados");
             e.printStackTrace(System.err);
