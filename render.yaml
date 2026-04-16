@@ -12,10 +12,6 @@ services:
     plan: free
     region: ohio
     healthCheckPath: /
-    disk:
-      name: uploads-data
-      mountPath: /app/uploads
-      sizeGB: 1
     envVars:
       # Injetando as credenciais do banco gerado no Render direto no Spring Boot
       - key: SPRING_DATASOURCE_URL
