@@ -1,0 +1,34 @@
+databases:
+  - name: sgcc-db
+    databaseName: sgcc
+    user: admin_sgcc
+    plan: free
+    region: ohio
+
+services:
+  - type: web
+    name: sgcc-app
+    env: docker
+    plan: free
+    region: ohio
+    healthCheckPath: /
+    disk:
+      name: uploads-data
+      mountPath: /app/uploads
+      sizeGB: 1
+    envVars:
+      # Injetando as credenciais do banco gerado no Render direto no Spring Boot
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: sgcc-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: sgcc-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: sgcc-db
+          property: password
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: validate
