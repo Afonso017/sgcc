@@ -13,11 +13,24 @@ services:
     region: ohio
     healthCheckPath: /
     envVars:
-      # Injetando as credenciais do banco gerado no Render direto no Spring Boot
-      - key: SPRING_DATASOURCE_URL
+      # Extrai as informações de conexão do banco de dados gerado no Render e as injeta como variáveis de ambiente para o Spring Boot
+      - key: DB_HOST
         fromDatabase:
           name: sgcc-db
-          property: connectionString
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: sgcc-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: sgcc-db
+          property: database
+
+      # Monta a URL de conexão do banco de dados usando as variáveis extraídas
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: sgcc-db
@@ -26,5 +39,6 @@ services:
         fromDatabase:
           name: sgcc-db
           property: password
+
       - key: SPRING_JPA_HIBERNATE_DDL_AUTO
         value: validate
