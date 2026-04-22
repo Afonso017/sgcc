@@ -74,7 +74,7 @@
                                         <c:forEach var="userUnit" items="${user.units}">
                                             <li class="d-flex justify-content-between align-items-center mb-1">
                                                 <span>&#8226; <c:out value="${userUnit.identifier}"/></span>
-                                                <form action="${pageContext.request.contextPath}/usuarios/${user.id}/desvincular-unidade"
+                                                <form action="${pageContext.request.contextPath}/admin/usuarios/${user.id}/desvincular-unidade"
                                                       method="post" style="display:inline;">
                                                     <input type="hidden" name="unitId" value="${userUnit.id}">
                                                     <button type="submit"

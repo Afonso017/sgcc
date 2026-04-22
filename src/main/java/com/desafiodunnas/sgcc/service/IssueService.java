@@ -168,18 +168,32 @@ public class IssueService {
     }
 
     /**
-     * Filtra todos os chamados de dentro do escopo de um usuário por meio de uma palavra de pesquisa.
+     * Filtra todos os chamados de dentro do escopo de um usuário.
+     * Para admin: Visão global do condomínio.
+     * Colaborador e morador: Visão restrita às unidades vinculadas aos seus perfis.
      */
     public List<Issue> findAllIssuesForUser(User user, String keyword) {
         try {
-            String search = (keyword == null) ? "" : keyword.trim();
+            boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+            String search = hasKeyword ? keyword.trim() : "";
 
-            if (user.getRole() == UserRole.MORADOR) {
-                return issueRepository.searchComprehensiveForResident(user.getUnits(), search);
+            if (user.getRole() == UserRole.ADMIN) {
+                return hasKeyword
+                        ? issueRepository.searchComprehensiveGlobal(search)
+                        : issueRepository.findAll();
             }
-            return issueRepository.searchComprehensiveGlobal(search);
+
+            // Filtro para moradores e colaboradores
+            if (user.getUnits() == null || user.getUnits().isEmpty()) {
+                return List.of();
+            }
+
+            return hasKeyword
+                    ? issueRepository.searchComprehensiveByUnits(user.getUnits(), search)
+                    : issueRepository.findByUnitIn(user.getUnits());
+
         } catch (Exception e) {
-            System.err.println("Erro ao buscar chamados filtrados");
+            System.err.println("Erro ao buscar chamados filtrados por nível de acesso e unidades");
             e.printStackTrace(System.err);
             throw new RuntimeException("Falha na busca de chamados", e);
         }

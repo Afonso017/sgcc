@@ -17,13 +17,11 @@ import java.util.Set;
 @Repository
 public interface IssueRepository extends JpaRepository<Issue, Long> {
 
+    List<Issue> findByUnitIn(Set<Unit> units);
+
     /**
      * Realiza uma varredura global e abrangente em múltiplos campos do chamado.
-     * Pesquisa por correspondências no título, descrição, tipo, status, identificador da unidade,
-     * nome do autor ou data de criação.
-     *
-     * @param keyword O termo de pesquisa fornecido pelo usuário.
-     * @return Lista integral de chamados que contenham o termo em qualquer um dos campos indexados.
+     * Exclusivo para o perfil ADMIN.
      */
     @Query("SELECT i FROM Issue i WHERE " +
             "LOWER(i.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
@@ -36,13 +34,8 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
     List<Issue> searchComprehensiveGlobal(@Param("keyword") String keyword);
 
     /**
-     * Realiza uma varredura abrangente em múltiplos campos, mas restrita
-     * ao escopo de unidades do morador. Garante que nenhuma informação de outras unidades
-     * seja vazada durante a pesquisa cruzada.
-     *
-     * @param units   A lista de unidades autorizadas para este morador.
-     * @param keyword O termo de pesquisa fornecido pelo usuário.
-     * @return Lista de chamados pertencentes às unidades do morador que correspondam ao termo de pesquisa.
+     * Realiza uma varredura abrangente em múltiplos campos, restrita
+     * ao escopo de unidades (para moradores e colaboradores).
      */
     @Query("SELECT i FROM Issue i WHERE i.unit IN :units AND (" +
             "LOWER(i.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
@@ -52,5 +45,5 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
             "LOWER(i.unit.identifier) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(i.createdBy.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(CAST(i.createdAt AS string)) LIKE LOWER(CONCAT('%', :keyword, '%')))")
-    List<Issue> searchComprehensiveForResident(@Param("units") Set<Unit> units, @Param("keyword") String keyword);
+    List<Issue> searchComprehensiveByUnits(@Param("units") Set<Unit> units, @Param("keyword") String keyword);
 }

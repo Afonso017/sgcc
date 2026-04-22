@@ -19,15 +19,15 @@
 
     <div class="d-flex justify-content-between mb-3">
         <div>
-            <a href="${pageContext.request.contextPath}/blocos/novo" class="btn btn-success">Novo Bloco</a>
+            <a href="${pageContext.request.contextPath}/admin/blocos/novo" class="btn btn-success">Novo Bloco</a>
             <a href="${pageContext.request.contextPath}/" class="btn btn-secondary ms-2">Voltar</a>
         </div>
 
-        <form action="${pageContext.request.contextPath}/blocos" method="get" class="d-flex" style="width: 400px;">
+        <form action="${pageContext.request.contextPath}/admin/blocos" method="get" class="d-flex" style="width: 400px;">
             <input type="text" name="q" class="form-control me-2" placeholder="Pesquisar por nome do bloco..." value="${keyword}">
             <button type="submit" class="btn btn-primary">Pesquisar</button>
             <c:if test="${not empty keyword}">
-                <a href="${pageContext.request.contextPath}/blocos" class="btn btn-outline-secondary ms-2">Limpar</a>
+                <a href="${pageContext.request.contextPath}/admin/blocos" class="btn btn-outline-secondary ms-2">Limpar</a>
             </c:if>
         </form>
     </div>
@@ -60,8 +60,8 @@
                         <td><c:out value="${block.units.size()}" /></td>
                         <td>
                             <div class="d-flex gap-2">
-                                <a href="${pageContext.request.contextPath}/blocos/${block.id}/editar" class="btn btn-sm btn-warning">Editar</a>
-                                <form action="${pageContext.request.contextPath}/blocos/${block.id}/excluir" method="post" onsubmit="return confirm('Tem certeza que deseja excluir este bloco e todas as suas unidades?');">
+                                <a href="${pageContext.request.contextPath}/admin/blocos/${block.id}/editar" class="btn btn-sm btn-warning">Editar</a>
+                                <form action="${pageContext.request.contextPath}/admin/blocos/${block.id}/excluir" method="post" onsubmit="return confirm('Tem certeza que deseja excluir este bloco e todas as suas unidades?');">
                                     <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
                                 </form>
                             </div>

@@ -110,9 +110,9 @@ Antes de iniciar os serviços, é necessário configurar as variáveis de ambien
 Utilize o seguinte modelo como referência:
 
 ```properties
-DATABASE=
-USERNAME=
-PASSWORD=
+DB_DATABASE=
+DB_USERNAME=
+DB_PASSWORD=
 ```
 
 ### 5.4. Execução Via Compose

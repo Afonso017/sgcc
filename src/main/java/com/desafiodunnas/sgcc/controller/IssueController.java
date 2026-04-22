@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,7 +35,7 @@ public class IssueController {
     public String listIssues(@RequestParam(value = "q", required = false) String keyword,
                              @ModelAttribute("currentUser") User currentUser, Model model) {
         try {
-            List<Issue> issues = issueService.findAllIssuesForUser(currentUser, keyword);
+            List<Issue> issues = new ArrayList<>(issueService.findAllIssuesForUser(currentUser, keyword));
 
             // Lógica de priorização: ordena pelos prazos mais próximos do vencimento
             issues.sort((i1, i2) -> {

@@ -5,7 +5,7 @@ import com.desafiodunnas.sgcc.domain.UserRole;
 import com.desafiodunnas.sgcc.service.BlockService;
 import com.desafiodunnas.sgcc.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -97,28 +97,32 @@ public class UserController {
     @PostMapping("/{id}/editar")
     public String updateUser(@PathVariable Long id,
                              @ModelAttribute User user,
-                             @ModelAttribute("currentUser") User currentUser,
-                             RedirectAttributes redirectAttributes
-    ) {
+                             RedirectAttributes redirectAttributes) {
         try {
-            userService.updateUser(id, user, currentUser);
+            // Garante que os dados do formulário serão aplicados ao ID correto da URL
+            user.setId(id);
+            userService.updateUser(user);
             return "redirect:/admin/usuarios";
+
         } catch (Exception e) {
-            System.err.println("Erro ao atualizar o usuário");
+            System.err.println("Erro ao atualizar o usuário: " + e.getMessage());
             e.printStackTrace(System.err);
             redirectAttributes.addFlashAttribute("errorMessage",
-                    "Erro ao atualizar o usuário.");
+                    "Erro ao atualizar o usuário: " + e.getMessage());
             return "redirect:/admin/usuarios/" + id + "/editar";
         }
     }
 
     @PostMapping("/{id}/excluir")
-    public String deleteUser(@PathVariable Long id,
-                             @ModelAttribute User user,
-                             RedirectAttributes redirectAttributes
-    ) {
+    public String deleteUser(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
-            userService.deleteUser(id, user);
+            userService.deleteUser(id);
+            return "redirect:/admin/usuarios";
+        } catch (DataIntegrityViolationException e) {
+            String errorMessage = "Ação negada: Este usuário possui chamados ou comentários registrados no sistema " +
+                    "e não pode ser excluído.";
+            System.err.println(errorMessage);
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
             return "redirect:/admin/usuarios";
         } catch (Exception e) {
             System.err.println("Erro ao processar exclusão de usuário");
@@ -150,7 +154,7 @@ public class UserController {
             System.err.println("Erro ao vincular a unidade ao usuário");
             e.printStackTrace(System.err);
             redirectAttributes.addFlashAttribute("errorMessage",
-                    "Ocorreu um erro ao vincular a unidade.");
+                    "Ocorreu um erro ao vincular a unidade: " + e.getMessage());
             return "redirect:/admin/usuarios";
         }
     }
@@ -170,7 +174,7 @@ public class UserController {
             System.err.println("Erro ao desvincular a unidade do usuário");
             e.printStackTrace(System.err);
             redirectAttributes.addFlashAttribute("errorMessage",
-                    "Ocorreu um erro ao remover a unidade.");
+                    "Ocorreu um erro ao remover a unidade: " + e.getMessage());
             return "redirect:/admin/usuarios";
         }
     }

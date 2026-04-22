@@ -15,7 +15,7 @@
         <div class="alert alert-danger"><c:out value="${errorMessage}"/></div>
     </c:if>
 
-    <form action="${pageContext.request.contextPath}/blocos${block.id != null ? '/' += block.id += '/editar' : ''}"
+    <form action="${pageContext.request.contextPath}/admin/blocos${block.id != null ? '/' += block.id += '/editar' : ''}"
           method="post">
         <div class="mb-3">
             <label class="form-label">Nome do bloco:</label>
@@ -50,7 +50,7 @@
             </c:choose>
         </div>
         <button type="submit" class="btn btn-primary">${block.id == null ? 'Cadastrar' : 'Atualizar Bloco'}</button>
-        <a href="${pageContext.request.contextPath}/blocos" class="btn btn-secondary">Cancelar</a>
+        <a href="${pageContext.request.contextPath}/admin/blocos" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
 </body>

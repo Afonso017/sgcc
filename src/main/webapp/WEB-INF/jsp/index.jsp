@@ -21,7 +21,7 @@
 
     <div class="list-group">
         <c:if test="${currentUser.role == 'ADMIN'}">
-            <a href="${pageContext.request.contextPath}/blocos" class="list-group-item list-group-item-action">Gerenciar Blocos e Unidades</a>
+            <a href="${pageContext.request.contextPath}/admin/blocos" class="list-group-item list-group-item-action">Gerenciar Blocos e Unidades</a>
             <a href="${pageContext.request.contextPath}/admin/usuarios" class="list-group-item list-group-item-action">Gerenciar Usuários</a>
         </c:if>
 

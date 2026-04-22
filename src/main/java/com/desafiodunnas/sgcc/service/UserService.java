@@ -5,11 +5,17 @@ import com.desafiodunnas.sgcc.domain.User;
 import com.desafiodunnas.sgcc.repository.UnitRepository;
 import com.desafiodunnas.sgcc.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Serviço responsável por encapsular as regras de negócio de gerenciamento de usuários,
@@ -22,25 +28,48 @@ public class UserService {
     private final UserRepository userRepository;
     private final UnitRepository unitRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserDetailsService userDetailsService;
 
     /**
      * Registra um novo usuário no sistema.
-     * Garante a unicidade do email (usado como login) e aplica o hash BCrypt na senha
-     * antes da persistência.
+     * Valida campos obrigatórios, garante a unicidade do email (usado como login)
+     * e aplica o hash BCrypt na senha antes da persistência.
      */
     @Transactional
     public void createUser(User user) {
-        if (userRepository.existsByEmail(user.getEmail())) {
-            throw new IllegalArgumentException("O email já está em uso.");
-        }
-
         try {
+            // Validações de campos obrigatórios
+            if (user.getName() == null || user.getName().trim().isEmpty()) {
+                throw new IllegalArgumentException("O nome é obrigatório.");
+            }
+
+            if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+                throw new IllegalArgumentException("O email é obrigatório.");
+            }
+
+            if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+                throw new IllegalArgumentException("A senha é obrigatória.");
+            }
+
+            if (user.getRole() == null) {
+                throw new IllegalArgumentException("O nível de acesso (cargo) é obrigatório.");
+            }
+
+            if (user.getPhone() != null && user.getPhone().length() > 20) {
+                throw new IllegalArgumentException("O número de telefone não pode exceder 20 caracteres.");
+            }
+
+            if (userRepository.existsByEmail(user.getEmail())) {
+                throw new IllegalArgumentException("O email já está em uso.");
+            }
+
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             userRepository.save(user);
+
         } catch (Exception e) {
             System.err.println("Erro ao salvar o usuário no banco de dados");
             e.printStackTrace(System.err);
-            throw new RuntimeException("Falha na criação de usuário", e);
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
@@ -61,36 +90,91 @@ public class UserService {
      * no formulário de edição.
      */
     @Transactional
-    public void updateUser(Long id, User updatedUser, User currentUser) {
+    public void updateUser(User updatedUser) {
         try {
-            User existing = userRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+            User existingUser = userRepository.findById(updatedUser.getId())
+                    .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-            if (existing.getId().equals(currentUser.getId()) && !existing.getRole().equals(updatedUser.getRole())) {
-                throw new IllegalStateException("Ação negada: Você não pode alterar seu próprio nível de acesso.");
+            // Identifica quem está logado para aplicar as regras de segurança na edição de perfil
+            String loggedInEmail = Objects.requireNonNull(
+                    SecurityContextHolder.getContext().getAuthentication()
+            ).getName();
+
+            // Guarda se a requisição atual é do próprio usuário editando o próprio perfil
+            boolean isEditingSelf = existingUser.getEmail().equals(loggedInEmail);
+
+            // Atualiza campos básicos
+            if (updatedUser.getName() != null) {
+                if (updatedUser.getName().trim().isEmpty()) {
+                    throw new IllegalArgumentException("O nome não pode ser vazio.");
+                }
+                existingUser.setName(updatedUser.getName());
             }
 
-            existing.setName(updatedUser.getName());
-            existing.setEmail(updatedUser.getEmail());
-            existing.setRole(updatedUser.getRole());
-            existing.setPhone(updatedUser.getPhone());
+            if (updatedUser.getEmail() != null) {
+                if (updatedUser.getEmail().trim().isEmpty()) {
+                    throw new IllegalArgumentException("O email não pode ser vazio.");
+                }
+                existingUser.setEmail(updatedUser.getEmail());
+            }
 
+            if (updatedUser.getPhone() != null) {
+                if (updatedUser.getPhone().length() > 20) {
+                    throw new IllegalArgumentException("O número de telefone não pode exceder 20 caracteres.");
+                }
+                existingUser.setPhone(updatedUser.getPhone());
+            }
+
+            // Verifica se está mudando o próprio cargo
+            if (updatedUser.getRole() != null && !existingUser.getRole().equals(updatedUser.getRole())) {
+                if (isEditingSelf) {
+                    throw new IllegalStateException("Ação negada: Você não pode alterar seu próprio nível de acesso " +
+                            "por questões de segurança.");
+                }
+                existingUser.setRole(updatedUser.getRole());
+            }
+
+            // Atualiza a senha apenas se uma nova foi digitada
             if (updatedUser.getPassword() != null && !updatedUser.getPassword().trim().isEmpty()) {
-                existing.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+                existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
             }
 
-            userRepository.save(existing);
+            // Salva as alterações no banco de dados
+            userRepository.save(existingUser);
+
+            // Atualiza a sessão do Spring com os novos dados alterados
+            if (isEditingSelf) {
+                UserDetails newDetails = userDetailsService.loadUserByUsername(existingUser.getEmail());
+                Authentication newAuth = new UsernamePasswordAuthenticationToken(
+                        newDetails,
+                        SecurityContextHolder.getContext().getAuthentication().getCredentials(),
+                        newDetails.getAuthorities()
+                );
+                SecurityContextHolder.getContext().setAuthentication(newAuth);
+            }
         } catch (Exception e) {
             System.err.println("Erro ao atualizar o usuário");
             e.printStackTrace(System.err);
-            throw new RuntimeException("Falha na atualização do usuário", e);
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
     @Transactional
-    public void deleteUser(Long userId, User loggedInUser) {
+    public void deleteUser(Long userId) {
         try {
-            if (userId.equals(loggedInUser.getId())) {
+            User userToDelete = userRepository.findById(userId)
+                    .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+
+            if (userToDelete.getId().equals(1L)) {
+                throw new IllegalStateException("Ação negada: O administrador principal do sistema não pode ser excluído.");
+            }
+
+            // Bloqueia a auto-exclusão da conta
+            String loggedInEmail = Objects.requireNonNull(
+                    SecurityContextHolder.getContext().getAuthentication()
+            ).getName();
+
+            if (userToDelete.getEmail().equals(loggedInEmail)) {
                 throw new IllegalStateException("Ação negada: Você não pode excluir sua própria conta.");
             }
 

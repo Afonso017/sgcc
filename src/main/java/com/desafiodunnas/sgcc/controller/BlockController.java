@@ -3,6 +3,7 @@ package com.desafiodunnas.sgcc.controller;
 import com.desafiodunnas.sgcc.domain.Block;
 import com.desafiodunnas.sgcc.service.BlockService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  * Controller responsável pelo CRUD e gerenciamento da infraestrutura física principal (blocos).
  */
 @Controller
-@RequestMapping("/blocos")
+@RequestMapping("/admin/blocos")
 @RequiredArgsConstructor
 public class BlockController {
 
@@ -63,7 +64,7 @@ public class BlockController {
                     "A criação do bloco e das unidades foi iniciada em segundo plano. " +
                             "Dependendo do tamanho, as unidades estarão disponíveis no sistema em alguns instantes.");
 
-            return "redirect:/blocos";
+            return "redirect:/admin/blocos";
         } catch (Exception e) {
             System.err.println("Erro ao salvar um novo bloco no banco de dados");
             e.printStackTrace(System.err);
@@ -90,13 +91,13 @@ public class BlockController {
     public String updateBlock(@PathVariable Long id, @ModelAttribute Block block, RedirectAttributes redirectAttributes) {
         try {
             blockService.updateBlock(id, block);
-            return "redirect:/blocos";
+            return "redirect:/admin/blocos";
         } catch (Exception e) {
             System.err.println("Erro ao atualizar o bloco");
             e.printStackTrace(System.err);
             redirectAttributes.addFlashAttribute("errorMessage",
                     e.getCause() != null ? e.getCause().getMessage() : "Erro ao atualizar o bloco.");
-            return "redirect:/blocos/" + id + "/editar";
+            return "redirect:/admin/blocos/" + id + "/editar";
         }
     }
 
@@ -108,13 +109,18 @@ public class BlockController {
     public String deleteBlock(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             blockService.deleteBlock(id);
-            return "redirect:/blocos";
+        } catch (DataIntegrityViolationException e) {
+            String errorMessage = "Ação negada: Este bloco possui vínculo com chamados ou moradores registrados " +
+                    "no sistema e não pode ser excluído.";
+            System.err.println(errorMessage);
+            e.printStackTrace(System.err);
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
         } catch (Exception e) {
             System.err.println("Erro ao processar exclusão do bloco no controller");
             e.printStackTrace(System.err);
             redirectAttributes.addFlashAttribute("errorMessage",
                     e.getCause() != null ? e.getCause().getMessage() : "Não foi possível excluir o bloco.");
-            return "redirect:/blocos";
         }
+        return "redirect:/admin/blocos";
     }
 }
