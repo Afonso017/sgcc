@@ -110,7 +110,7 @@ Antes de iniciar os serviços, é necessário configurar as variáveis de ambien
 Utilize o seguinte modelo como referência:
 
 ```properties
-DB_DATABASE=
+DB_NAME=
 DB_USERNAME=
 DB_PASSWORD=
 ```
